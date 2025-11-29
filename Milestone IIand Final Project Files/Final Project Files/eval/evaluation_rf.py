@@ -1,138 +1,97 @@
-########################## WIP #######################
+# evaluation_rf.py
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
     confusion_matrix,
     roc_curve,
     precision_recall_curve,
-    auc,
-    RocCurveDisplay
+    auc
 )
 
-# Binary Accuracy 
-#print(f"Binary accuracy: {acc:.3f}")
+def evaluate_rf_model(y_true, y_pred, y_proba=None,
+                      class_names=None,
+                      display_confusion_matrix=True,
+                      display_roc=True,
+                      display_pr=True,
+                      figsize=(6,5),
+                      title_prefix="Random Forest"):
+    """
+    Evaluate a RandomForest (or any classifier) predictions and optionally plot evaluation visuals.
 
-# Metrics Report
-print("\nMetrics Report:")
-print(classification_report(y_val, y_pred, target_names=["Non-toxic (0)", "Toxic (1)"]))
-cr = classification_report(y_val, y_pred, target_names=class_names, output_dict=True)
+    Args:
+      y_true (array-like): true labels.
+      y_pred (array-like): predicted labels.
+      y_proba (array-like or None): predicted scores/probabilities for positive class (for ROC/PR curves).
+      class_names (list of str or None): names for classes, e.g. ["Non-toxic", "Toxic"].
+      display_confusion_matrix (bool): whether to plot confusion matrix.
+      display_roc (bool): whether to plot ROC curve (requires y_proba).
+      display_pr (bool): whether to plot PR curve (requires y_proba).
+      figsize (tuple): default figure size for plots.
+      title_prefix (str): prefix for plot titles / labels.
 
-acc = {}
-acc['Random Forest Untuned'] = cr['accuracy']
-prec = {}
-prec['Random Forest Untuned'] = cr['Toxic']['precision']
-rec = {}
-rec['Random Forest Untuned'] = cr['Toxic']['recall']
-f1toxic = {}
-f1toxic['Random Forest Untuned'] = cr['Toxic']['f1-score']
-f1nontoxic = {}
-#f1nontoxic['Random Forest Untuned'] = cr['Non-toxic']['f1-score']
+    Returns:
+      results (dict): with keys e.g. 'accuracy', 'classification_report', 'confusion_matrix',
+                      and if y_proba given: 'fpr', 'tpr', 'roc_auc', 'precision', 'recall', 'pr_auc'.
+    """
 
-# Confusion Matrix
-cm = confusion_matrix(y_val, y_pred)
-plt.figure(figsize=(6,5))
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=["Non-toxic", "Toxic"], yticklabels=["Non-toxic", "Toxic"])
-plt.title("Confusion Matrix - Random Forest Untuned")
-plt.xlabel("Predicted Label")
-plt.ylabel("True Label")
-plt.show()
+    results = {}
 
-# False negative rate (for toxic species)
-TN, FP, FN, TP = cm.ravel()
-fn = {}
-if FN > 0:
-    fn['Random Forest Untuned'] = FN / (FN + TP)
-    
-# ROC Curve & AUC
-fpr, tpr, thresholds = roc_curve(y_val, y_pred_proba)
-roc_auc = auc(fpr, tpr)
-roc = {}
-roc['Random Forest Untuned'] = roc_auc
+    # Basic metrics
+    acc = accuracy_score(y_true, y_pred)
+    results['accuracy'] = acc
 
-plt.figure(figsize=(6,5))
-plt.plot(fpr, tpr, color='lightblue', lw=2, label=f'ROC curve (AUC = {roc_auc:.3f})')
-plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 1.05])
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('ROC Curve - Random Forest Untuned')
-plt.legend(loc="lower right")
-plt.show()
+    if class_names is not None:
+        report = classification_report(y_true, y_pred, target_names=class_names, output_dict=True)
+    else:
+        report = classification_report(y_true, y_pred, output_dict=True)
 
-# PR Curve
-precision, recall, thresholds = precision_recall_curve(y_val, y_pred)
-pr_auc = auc(precision, recall)
-pr = {}
-pr['Random Forest Untuned'] = pr_auc
+    results['classification_report'] = report
 
-plt.figure(figsize=(6,5))
-plt.plot(precision, recall, color='lightblue', lw=2, label=f'PR curve (AUC = {pr_auc:.3f})')
-plt.plot([0, 1], [1, 0], color='navy', lw=2, linestyle='--')
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 1.05])
-plt.xlabel('Precision')
-plt.ylabel('Recall')
-plt.title('PR Curve - Random Forest Untuned')
-plt.legend(loc="lower right")
-plt.show()
+    cm = confusion_matrix(y_true, y_pred)
+    results['confusion_matrix'] = cm
 
-# Metrics Report
-print("\nMetrics Report (Tuned Model):")
-print(classification_report(y_val, y_pred_tuned, target_names=class_names))
-cr = classification_report(y_val, y_pred_tuned, target_names=class_names, output_dict=True)
-acc['Random Forest Tuned'] = cr['accuracy']
-prec['Random Forest Tuned'] = cr['Toxic']['precision']
-rec['Random Forest Tuned'] = cr['Toxic']['recall']
-f1toxic['Random Forest Tuned'] = cr['Toxic']['f1-score']
-#f1nontoxic['Random Forest Tuned'] = cr['Non-toxic']['f1-score']
+    if display_confusion_matrix:
+        plt.figure(figsize=figsize)
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+                    xticklabels=class_names if class_names else None,
+                    yticklabels=class_names if class_names else None)
+        plt.xlabel('Predicted label')
+        plt.ylabel('True label')
+        plt.title(f"{title_prefix} — Confusion Matrix")
+        plt.show()
 
-# Confusion Matrix
-cm = confusion_matrix(y_val, y_pred_tuned)
-plt.figure(figsize=(6,5))
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=["Non-toxic", "Toxic"], yticklabels=["Non-toxic", "Toxic"])
-plt.title("Confusion Matrix - Random Forest (Tuned Model)")
-plt.xlabel("Predicted Label")
-plt.ylabel("True Label")
-plt.show()
+    # If probabilities/scores provided — compute ROC & PR curves
+    if y_proba is not None:
+        y_proba = np.array(y_proba)
+        fpr, tpr, _ = roc_curve(y_true, y_proba)
+        roc_auc = auc(fpr, tpr)
+        results['fpr'], results['tpr'], results['roc_auc'] = fpr, tpr, roc_auc
 
-# False negative rate (for toxic species)
-TN, FP, FN, TP = cm.ravel()
-if FN > 0:
-    fn['Random Forest Tuned'] = FN / (FN + TP)
-    print(f'False Negative Rate: {FN / (FN + TP)}')
-    
-# ROC Curve & AUC
-fpr, tpr, thresholds = roc_curve(y_val, y_pred_proba_tuned)
-roc_auc = auc(fpr, tpr)
-roc['Random Forest Tuned'] = roc_auc
+        if display_roc:
+            plt.figure(figsize=figsize)
+            plt.plot(fpr, tpr, label=f"ROC (AUC = {roc_auc:.3f})", color='blue', lw=2)
+            plt.plot([0,1],[0,1], linestyle='--', color='navy', lw=2)
+            plt.xlabel('False Positive Rate')
+            plt.ylabel('True Positive Rate')
+            plt.title(f"{title_prefix} — ROC Curve")
+            plt.legend(loc='lower right')
+            plt.show()
 
-plt.figure(figsize=(6,5))
-plt.plot(fpr, tpr, color='lightblue', lw=2, label=f'ROC Curve (AUC = {roc_auc:.3f}) (Tuned Model)')
-plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 1.05])
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('ROC Curve - Random Forest (Tuned Model)')
-plt.legend(loc="lower right")
-plt.show()
+        precision, recall, _ = precision_recall_curve(y_true, y_proba)
+        pr_auc = auc(recall, precision)
+        results['precision_curve'], results['recall_curve'], results['pr_auc'] = precision, recall, pr_auc
 
-# PR Curve
-precision, recall, thresholds = precision_recall_curve(y_val, y_pred_tuned)
-pr_auc = auc(precision, recall)
-pr['Random Forest Tuned'] = pr_auc
+        if display_pr:
+            plt.figure(figsize=figsize)
+            plt.plot(recall, precision, label=f"PR (AUC = {pr_auc:.3f})", color='green', lw=2)
+            plt.xlabel('Recall')
+            plt.ylabel('Precision')
+            plt.title(f"{title_prefix} — Precision-Recall Curve")
+            plt.legend(loc='lower left')
+            plt.show()
 
-plt.figure(figsize=(6,5))
-plt.plot(precision, recall, color='lightblue', lw=2, label=f'PR curve (AUC = {pr_auc:.3f})')
-plt.plot([0, 1], [1, 0], color='navy', lw=2, linestyle='--')
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 1.05])
-plt.xlabel('Precision')
-plt.ylabel('Recall')
-plt.title('PR Curve - Random Forest Tuned')
-plt.legend(loc="lower right")
-plt.show()
+    return results

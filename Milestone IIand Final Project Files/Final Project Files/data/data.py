@@ -35,6 +35,12 @@ def load_metadata(data_dir):
     full_meta = full_meta.sort_values(['toxicity','class_id'])
     return full_meta
 
+def mixup_collate_fn(batch):
+    """Apply MixUp after batching"""
+    images, labels = torch.utils.data.default_collate(batch)
+    mixup = v2.MixUp(num_classes=2, alpha=1.0)
+    return mixup(images, labels)
+
 class PlantDatasetWithSpecies(torch.utils.data.Dataset):
     """
     Takes in a subset and metadata dataframe. Retains plants species metadata in    addition to toxicity label and image to be used in the evaluation of model performance by plant species.
