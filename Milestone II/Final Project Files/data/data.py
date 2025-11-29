@@ -34,8 +34,22 @@ def load_metadata(data_dir):
     full_meta = pd.read_csv(os.path.join(data_dir, 'full_metadata.csv'))
     return full_meta
 
+class PlantDatasetWithSpecies(torch.utils.data.Dataset):
+    def __init__(self, subset, metadata):
+        self.subset = subset
+        self.metadata = metadata
+        
+    def __getitem__(self, idx):
+        image, label = self.subset[idx]
+        actual_idx = self.subset.indices[idx]
+        species = self.metadata.iloc[actual_idx]['slang']
+        return image, label, species
+    
+    def __len__(self):
+        return len(self.subset)
+
 def get_dataloaders(meta_df, data_dir,
-                    img_height=150, img_width=150,
+                    img_height=224, img_width=224,
                     batch_size=32, random_state=42):
     """
     Splits metadata into train/val/test, builds ImageFolder dataset, 
@@ -94,6 +108,9 @@ def get_dataloaders(meta_df, data_dir,
     train_strong_dataset.dataset.transform = train_transform_strong
     val_dataset.dataset.transform = val_transform
     test_dataset.dataset.transform = val_transform
+
+    # Test dataset with species
+    test_dataset_with_species = PlantDatasetWithSpecies(test_dataset, full_meta)
 
     # DataLoaders
     train_loader = DataLoader(train_dataset, batch_size=batch_size,

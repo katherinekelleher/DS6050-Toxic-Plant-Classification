@@ -1,9 +1,9 @@
 import torch
 import argparse
 from data.data import set_seed, get_data_dir, load_metadata, get_dataloaders
-from train.train_cnn import get_model_by_name  # FIXED: Import from train_cnn, not cnn_models
+from train.train_cnn import get_model_by_name  
 from train.train_cnn import train_model
-from eval.evaluation_cnn import evaluate_model  # FIXED: Use actual filename
+from eval.evaluation_cnn import evaluate_model  
 
 def main(args):
     # Setup

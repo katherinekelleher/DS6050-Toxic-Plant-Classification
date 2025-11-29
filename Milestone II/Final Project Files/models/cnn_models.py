@@ -8,6 +8,7 @@ batch_size = 32
 num_epochs = 10
 learning_rate = .0001
 dropout = 0.2
+num_classes= 2
 
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
