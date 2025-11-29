@@ -32,9 +32,13 @@ def get_data_dir():
 
 def load_metadata(data_dir):
     full_meta = pd.read_csv(os.path.join(data_dir, 'full_metadata.csv'))
+    full_meta = full_meta.sort_values(['toxicity','class_id'])
     return full_meta
 
 class PlantDatasetWithSpecies(torch.utils.data.Dataset):
+    """
+    Takes in a subset and metadata dataframe. Retains plants species metadata in    addition to toxicity label and image to be used in the evaluation of model performance by plant species.
+    """
     def __init__(self, subset, metadata):
         self.subset = subset
         self.metadata = metadata
@@ -57,9 +61,9 @@ def get_dataloaders(meta_df, data_dir,
     """
 
     # Transforms
-    train_transform = transforms.Compose([
-        transforms.Resize((img_height, img_width)),
-        transforms.RandomHorizontalFlip(),
+    train_transform = transforms.v2.Compose([
+        transforms.v2.Resize((img_height, img_width)),
+        transforms.v2.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
@@ -69,13 +73,13 @@ def get_dataloaders(meta_df, data_dir,
     transforms.v2.RandomHorizontalFlip(),
     transforms.v2.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
     transforms.ToTensor(),
-    transforms.v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    transforms.v2.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
     ])
     
-    val_transform = transforms.Compose([
-        transforms.Resize((img_height, img_width)),
+    val_transform = transforms.v2.Compose([
+        transforms.v2.Resize((img_height, img_width)),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
+        transforms.v2.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
     ])
 
@@ -120,7 +124,7 @@ def get_dataloaders(meta_df, data_dir,
                                      shuffle=True, num_workers=2)
     val_loader = DataLoader(val_dataset, batch_size=batch_size,
                             shuffle=False, num_workers=2)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size,
+    test_loader = DataLoader(test_dataset_with_species, batch_size=batch_size,
                              shuffle=False, num_workers=2)
 
     return train_loader, train_strong_loader, val_loader, test_loader
