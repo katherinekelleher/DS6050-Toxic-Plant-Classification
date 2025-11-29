@@ -114,7 +114,7 @@ def get_dataloaders(meta_df, data_dir,
     test_dataset.dataset.transform = val_transform
 
     # Test dataset with species
-    test_dataset_with_species = PlantDatasetWithSpecies(test_dataset, full_meta)
+    test_dataset_with_species = PlantDatasetWithSpecies(test_dataset, load_metadata(data_dir))
 
     # DataLoaders
     train_loader = DataLoader(train_dataset, batch_size=batch_size,
