@@ -13,6 +13,18 @@ def color_histogram(img, bins=(256, 256, 256)):
     cv2.normalize(hist, hist)
     return hist.flatten()
 
+def color_histogram(img):
+    """
+    Compute a normalized color histogram with 3 channels and 4 bins per channel for the image.
+    Returns a flattened 1D feature vector.
+    """
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    bins = 4
+    # Channels for R, G, B; no mask; 4 bins; ranges (0,256)
+    hist = cv2.calcHist([img_rgb],[0, 1, 2], None, [bins, bins, bins], [0, 256, 0, 256, 0, 256])
+    hist = cv2.normalize(hist, hist).flatten()
+    return hist
+
 def glcm_texture(img):
     """
     Compute GLCM-based texture features (energy, homogeneity, correlation, contrast, dissimilarity)
@@ -20,7 +32,7 @@ def glcm_texture(img):
     Returns a tuple of 5 values.
     """
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    glcm = graycomatrix(gray, [1], [0, np.pi/4, np.pi/2, 3*np.pi/4])
+    glcm = graycomatrix(gray, [2], [np.pi/2])
     energy = graycoprops(glcm, 'energy')[0, 0]
     homogeneity = graycoprops(glcm, 'homogeneity')[0, 0]
     correlation = graycoprops(glcm, 'correlation')[0, 0]
