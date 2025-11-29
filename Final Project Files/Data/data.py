@@ -36,6 +36,9 @@ def load_metadata(data_dir):
     return full_meta
     
 class PlantDatasetWithSpecies(torch.utils.data.Dataset):
+    """
+    Takes in a subset and metadata dataframe. Retains plants species metadata in    addition to toxicity label and image to be used in the evaluation of model performance by plant species.
+    """
     def __init__(self, subset, metadata):
         self.subset = subset
         self.metadata = metadata
