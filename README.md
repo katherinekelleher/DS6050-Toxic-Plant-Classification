@@ -42,77 +42,75 @@ Run from project root (where main.py lives)
 
 --mode {train, eval, all}
 Choose operation mode:
-• train — trains a specified CNN model (and optionally evaluates afterwards)
-• eval — loads a saved model (with --model_path) and evaluates on test data
-• all — loops through all model variants (b0, b0_cbam, b2_cbam), training (and optionally evaluating) each
+* train — trains a specified CNN model (and optionally evaluates afterwards)
+* eval — loads a saved model (with --model_path) and evaluates on test data
+* all — loops through all model variants (b0, b0_cbam, b2_cbam), training (and optionally evaluating) each
 
---model {b0, b0_cbam, b2_cbam}
+`--model {b0, b0_cbam, b2_cbam}`
 CNN variant to use (required for mode = train, or used in mode = all)
 
---pretrained
+`--pretrained`
 If provided, use pretrained ImageNet weights for the backbone
 
---dropout <float>
+`--dropout <float>`
 Dropout probability for classifier head (default 0.2)
 
---epochs <int>
+`--epochs <int>`
 Number of training epochs (default 10)
 
---lr <float>
+`--lr <float>`
 Learning rate for optimizer (default 1e-4)
 
---strong_aug
+`--strong_aug`
 If provided, use stronger data augmentation during training
 
---evaluate_after_train
+`--evaluate_after_train`
 When training (mode train or all), if provided, run evaluation on test data immediately after training
 
---model_path <path>
+`--model_path <path>`
 Used when mode = eval: path to saved model file to load and evaluate
 
 ## Example usage:
 
 Train a CNN model (no evaluation):
 
-python main.py --mode train --model b0_cbam --pretrained --strong_aug --epochs 10
+`python main.py --mode train --model b0_cbam --pretrained --strong_aug --epochs 10`
 
 
 Train + Evaluate a CNN model:
 
-python main.py --mode train --model b0_cbam --pretrained --strong_aug --epochs 10 --evaluate_after_train
+`python main.py --mode train --model b0_cbam --pretrained --strong_aug --epochs 10 --evaluate_after_train`
 
 
 Evaluate a saved CNN model:
 
-python main.py --mode eval --model_path path/to/saved_model.pth
+`python main.py --mode eval --model_path path/to/saved_model.pth`
 
 
 Train (and optionally evaluate) all CNN variants:
 
-python main.py --mode all --pretrained --strong_aug --epochs 10 --evaluate_after_train
+`python main.py --mode all --pretrained --strong_aug --epochs 10 --evaluate_after_train`
 
 
 RF pipeline usage (feature-based):
 
-Run:
-
-python train_rf.py --meta_csv path/to/metadata.csv --image_root path/to/images --output_model rf_model.joblib
+`python train_rf.py --meta_csv path/to/metadata.csv --image_root path/to/images --output_model rf_model.joblib`
 
 When using mode “all,” running through multiple model variants will take longer — you are retraining/evaluating several models sequentially.
 
-# Train CNN
-python main.py --model b0_cbam --pretrained --strong_aug --epochs 10
+# Additional Train CNN Examples
+`python main.py --model b0_cbam --pretrained --strong_aug --epochs 10`
 
-python main.py --mode train --model b0_cbam --pretrained --strong_aug --epochs 10 --lr 0.0001
+`python main.py --mode train --model b0_cbam --pretrained --strong_aug --epochs 10 --lr 0.0001`
 
-python main.py --mode train --model b0_cbam --pretrained --strong_aug --epochs 10 --lr 0.0001 --evaluate_after_train
+`python main.py --mode train --model b0_cbam --pretrained --strong_aug --epochs 10 --lr 0.0001 --evaluate_after_train`
 
-python main.py --mode eval --model_path path/to/saved_model.pth (model that has already been run for evauation)
+`python main.py --mode eval --model_path path/to/saved_model.pth (model that has already been run for evauation)`
 
-python main.py --mode all --pretrained --strong_aug --epochs 10 --lr 0.0001 --evaluate_after_train
+`python main.py --mode all --pretrained --strong_aug --epochs 10 --lr 0.0001 --evaluate_after_train`
 
-# Train RF
-python train_rf.py --meta_csv data.csv --image_root ./images
+# Additional Train RF Examples
+`python train_rf.py --meta_csv data.csv --image_root ./images`
 
 
 
