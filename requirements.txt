@@ -1,9 +1,9 @@
-pandas  
-numpy  
-matplotlib  
-scikit-learn  
-torch  
-torchvision  
-tqdm  
-opencv-python  
+pandas v2.3.2  
+numpy v2.2.6  
+matplotlib v3.10.5  
+scikit-learn v1.7.1  
+torch v2.9.0+cu128    
+torchvision v0.24.0+cu128   
+tqdm v4.67.1  
+opencv-python v 4.12.0  
 Pillow  
