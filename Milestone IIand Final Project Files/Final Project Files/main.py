@@ -70,6 +70,8 @@ def main():
     parser.add_argument('--model', type=str, choices=['b0','b0_cbam','b2_cbam'],
                         help="Model variant to run (required for mode=train or mode=all)")
     parser.add_argument('--pretrained', action='store_true', help="Use pretrained weights")
+    parser.add_argument('--strong_aug', action='store_true',
+                        help="Train model with strong data augmentation")
     parser.add_argument('--dropout', type=float, default=0.2, help="Dropout rate for model head")
     parser.add_argument('--epochs', type=int, default=10)
     parser.add_argument('--lr', type=float, default=1e-4)
