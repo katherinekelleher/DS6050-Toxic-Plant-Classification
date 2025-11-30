@@ -29,6 +29,7 @@ def train_one(model_name, args, dataloaders):
         model,
         active_train_loader,
         dataloaders['val'],
+        aug=args.strong_aug,
         num_epochs=args.epochs,
         lr=args.lr
     )

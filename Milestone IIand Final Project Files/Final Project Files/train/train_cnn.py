@@ -1,7 +1,9 @@
 import argparse
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
+from torchvision import transforms
 from tqdm import tqdm
 import random
 import numpy as np
@@ -43,7 +45,7 @@ def get_model_by_name(name, **kwargs):
     else:
         raise ValueError(f"Unknown model name: {name}")
 
-def train_epoch(model, dataloader, criterion, optimizer, device):
+def train_epoch(model, dataloader, criterion, optimizer, device, aug):
     """Train the model for one epoch."""
     model.train()
     running_loss = 0.0
@@ -52,17 +54,30 @@ def train_epoch(model, dataloader, criterion, optimizer, device):
 
     for inputs, labels in tqdm(dataloader, desc="Training"):
         inputs, labels = inputs.to(device), labels.to(device)
+        
+        if aug:
+            mixup = transforms.v2.MixUp(num_classes=2, alpha=1.0)
+            inputs, labels = mixup(inputs, labels)
 
         optimizer.zero_grad()
         outputs = model(inputs)
-        loss = criterion(outputs, labels)
+        
+        if aug:
+            loss = -torch.mean(torch.sum(F.log_softmax(outputs, dim=1) * labels, dim=1))
+            _, predicted = outputs.max(1)
+            _, labels_idx = labels.max(1)
+            total += labels.size(0)
+            correct += predicted.eq(labels_idx).sum().item()
+        else:
+            loss = criterion(outputs, labels)
+            _, predicted = outputs.max(1)
+            total += labels.size(0)
+            correct += predicted.eq(labels).sum().item()
+        
         loss.backward()
         optimizer.step()
 
         running_loss += loss.item()
-        _, predicted = outputs.max(1)
-        total += labels.size(0)
-        correct += predicted.eq(labels).sum().item()
 
     epoch_loss = running_loss / len(dataloader)
     epoch_acc = 100. * correct / total
@@ -115,7 +130,7 @@ def plot_training_history(history, title="Training History"):
     plt.tight_layout()
     plt.show()
 
-def train_model(model, train_loader, val_loader, num_epochs=10, lr=1e-4):
+def train_model(model, train_loader, val_loader, aug, num_epochs=10, lr=1e-4):
     """
     Train and evaluate a model.
     
@@ -133,7 +148,7 @@ def train_model(model, train_loader, val_loader, num_epochs=10, lr=1e-4):
         print(f'\nEpoch {epoch+1}/{num_epochs}')
         print('-' * 30)
 
-        train_loss, train_acc = train_epoch(model, train_loader, criterion, optimizer, device)
+        train_loss, train_acc = train_epoch(model, train_loader, criterion, optimizer, device, aug)
         val_loss, val_acc = evaluate(model, val_loader, criterion, device)
 
         history['train_loss'].append(train_loss)
@@ -165,7 +180,7 @@ def main(args):
     # Select which training loader to use based on strong_aug flag
     if args.strong_aug:
         active_train_loader = train_strong_loader
-        print("Using HEAVY augmentation (CutMix + ColorJitter)")
+        print("Using HEAVY augmentation (MixUp + ColorJitter)")
     else:
         active_train_loader = train_loader
         print("Using LIGHT augmentation (basic)")
@@ -183,8 +198,9 @@ def main(args):
     history = train_model(
         model, 
         active_train_loader, 
-        val_loader, 
-        num_epochs=args.epochs, 
+        val_loader,
+        aug=args.strong_aug,
+        num_epochs=args.epochs,
         lr=args.lr
     )
 
