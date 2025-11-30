@@ -187,9 +187,9 @@ def evaluate_model(
         if fn_species:
             fn_species_df = pd.DataFrame.from_dict(fn_species, orient='index')
             fn_species_df.columns = ['False Negative Rate']
-            print("\n" + "="*50)
+            print("\n" + "="*60)
             print("False Negative Rates by Species:")
-            print("="*50)
+            print("="*60)
             print(fn_species_df.to_string(justify='left'))
             results['species_fn_rates'] = fn_species
 
