@@ -30,10 +30,14 @@ Contains a PDF file with a literature review and initial project proposal.
 ## Literature Review II & Final Project
 Contains a PDF file with an expanded literature review, initial toxic plant classification model training and evaluation results, and outlined next steps. The subfolder `\input` contains the plant image data for toxic and non-toxic plants that were used for training, validation, and testing. 
 
+View the .ipynb file "ProjectCode_20251206_Combined.ipynb" to view the 
+
 ## Final Project - Run and Evaluate Models
 You should install necessary Python packages before running that are contained within the requirements.txt.
 
 Ensure your image data and metadata CSV (with image paths & labels) under the expected directory structure (input folder) so that data-loading logic can find them correctly.
+
+It is recommended to run the commands within the Rivanna environmnet with at least 12 cores and 200 GB of memory to run the models efficiently.
 
 Usage & command-line options (CNN pipeline)
 Run from project root (where main.py lives)
